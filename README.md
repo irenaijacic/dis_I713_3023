@@ -4,7 +4,7 @@ Pošto se autentifikacija i autorizacija vrši uz pomoć Okte, ovdje su postavlj
 Login na: http://localhost:8765/authenticate/login
 Nalog - username: irena.ijacic@uns.ac.rs
         password: DISProjekatLozinka123
-
+<div align="center">
 Radi se o mikroservisnoj arhitekturi koja obuhvata sledeće mikroservise: user-service, course-service, payment-service, review-service i notification-service. Pored navedenih mikroservisa kreirani su i api-gateway, eureka-server i common-security koji su takođe bili neophodni za funkcionisanje sistema. 
 
 U okviru ovog rada prikazan je jedan od načina funkcionisanja sajta za kupovanje online kurseva. Korisnici koji su kreirali svoj nalog mogu da kupuju odgovarajuće kurseve. Kada kažemo kurseve, ideja je bila da se oni odnose na sticanje znanja i vještine iz oblasti programnjiranja, tako su i sami kursevi orijentisani na teme iz pomenute oblasti. Inspiracija za odabir teme bila je stranica Udemy, koja pruža veliki broj kurseva različitih kategorija. Dakle, korisnici su obavezni da prvo kreiraju svoj nalog, a zatim imaju mogućnost pregleda svih kurseva, plaćanja i upisa na odabrani kurs. 
@@ -25,7 +25,7 @@ API Gateway koristi Oktu za autentifikaciju i autorizaciju, dok se OAuth2 korist
 Tehnologije i biblioteke: Spring Boot, Spring Cloud Gateway, Spring Security + OAuth2, Resilience4J, Redis Rate Limiter, Reactor (Mono). Baza podataka je H2 in-memory baza. 
 
 Za pokretanje aplikacije kroz Command Prompt komanda: mvn spring-boot:run
-
+</div>
 Na slici ispod prikazan je dijagram klasa kojim se predstavlja veza između 5 osnovnih servisa.
 
 ![Untitled Diagram drawio](https://github.com/user-attachments/assets/59d76bd2-af90-4f40-84d8-cf4763798cff)
