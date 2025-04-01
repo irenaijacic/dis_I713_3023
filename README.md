@@ -1,3 +1,4 @@
+Link ka Docker image: https://hub.docker.com/repository/docker/irenaijacic/dis/tags
 
 Radi se o mikroservisnoj arhitekturi koja obuhvata sledeće mikroservise: user-service, course-service, payment-service, review-service i notification-service. Pored navedenih mikroservisa kreirani su i api-gateway, eureka-server i common-security koji su takođe bili neophodni za funkcionisanje sistema. 
 
