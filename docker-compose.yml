@@ -1,0 +1,184 @@
+version: '3.8'
+
+services:
+  h2-db:
+    image: irenaijacic/dis:h2-latest
+    container_name: h2-db
+    ports:
+      - "1521:1521"
+      - "8082:8082"
+    environment:
+      - H2_OPTIONS=-web -webAllowOthers -tcp -tcpAllowOthers -ifNotExists
+    volumes:
+      - h2-data:/opt/h2-data
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  eureka-server:
+    image: irenaijacic/dis:eurekaserver-latest
+    container_name: eureka-server
+    networks:
+      - microservices-net
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_INSTANCE_HOSTNAME=eureka-server
+
+  config-server:
+    image: irenaijacic/dis:configserver-latest
+    container_name: config-server
+    networks:
+      - microservices-net
+    ports:
+      - "9296:9296"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://config-server:9296/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - eureka-server
+      
+
+  api-gateway:
+    image: irenaijacic/dis:apigateway-latest
+    container_name: api-gateway
+    networks:
+      - microservices-net
+    ports:
+      - "8765:8765"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    depends_on:
+      config-server:
+        condition: service_healthy
+
+  user-service:
+    image: irenaijacic/dis:userservice-latest
+    container_name: user-service
+    networks:
+      - microservices-net
+    ports:
+      - "8081:8081"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:h2:tcp://h2-db:1521//opt/h2-data/userdb
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+    depends_on:
+      - api-gateway
+      - h2-db
+
+  rabbitmq:
+    image: irenaijacic/dis:rabbitmq-3-management
+    container_name: rabbitmq
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq 
+    networks:
+      - microservices-net
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  course-service:
+    image: irenaijacic/dis:courseservice-latest
+    container_name: course-service
+    networks:
+      - microservices-net
+    ports:
+      - "8087:8087"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_RABBITMQ_HOST=rabbitmq  
+      - SPRING_DATASOURCE_URL=jdbc:h2:tcp://h2-db:1521//opt/h2-data/userdb
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+    depends_on:
+      - api-gateway
+      - rabbitmq
+      - h2-db
+
+  payment-service:
+    image: irenaijacic/dis:paymentservice-latest
+    container_name: paymentservice
+    networks:
+      - microservices-net
+    ports:
+      - "8089:8089"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_RABBITMQ_HOST=rabbitmq 
+      - SPRING_DATASOURCE_URL=jdbc:h2:tcp://h2-db:1521//opt/h2-data/userdb
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+    depends_on:
+      - api-gateway
+      - rabbitmq
+      - h2-db
+
+  notification-service:
+    image: irenaijacic/dis:notificationservice-latest
+    container_name: notification-service
+    networks:
+      - microservices-net
+    ports:
+      - "8091:8091"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_RABBITMQ_HOST=rabbitmq 
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_DATA_REDIS_HOST=latestredis 
+      - SPRING_DATASOURCE_URL=jdbc:h2:tcp://h2-db:1521//opt/h2-data/userdb
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+    depends_on:
+      - api-gateway
+      - rabbitmq
+      - latestredis
+      - h2-db
+
+  review-service:
+    image: irenaijacic/dis:reviewservice-latest
+    container_name: review-service
+    networks:
+      - microservices-net
+    ports:
+      - "8084:8084"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:h2:tcp://h2-db:1521//opt/h2-data/userdb
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+    depends_on:
+      - api-gateway
+      - h2-db
+
+
+
+  latestredis:
+    image: irenaijacic/dis:redis-latest
+    container_name: latestredis
+    networks:
+      - microservices-net
+    ports:
+      - "6379:6379"
+
+networks:
+  microservices-net:
+    external: true
+
+volumes:
+  rabbitmq-data:
+  h2-data: 

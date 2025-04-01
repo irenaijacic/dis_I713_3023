@@ -1,0 +1,5 @@
+com\example\common\OAuthFeignConfig$1.class
+com\example\common\OAuthFeignConfig.class
+com\example\common\CustomException.class
+com\example\common\CustomErrorDecoder.class
+com\example\common\App.class
